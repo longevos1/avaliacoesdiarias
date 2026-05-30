@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Avaliacoes Diarias — Longevos</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:sans-serif;background:#f4f6fa;min-height:100vh;padding:16px 12px}
+.wrap{max-width:540px;margin:0 auto}
+.header{background:#1a5276;border-radius:14px;padding:14px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+.header-left{display:flex;align-items:center;gap:12px}
+.header h1{color:#fff;font-size:17px;font-weight:700}
+.header p{color:#aed6f1;font-size:12px}
+.tabs{display:flex;gap:8px;margin-bottom:20px}
+.tab{flex:1;padding:10px 4px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:13px;background:#fff;color:#1a5276}
+.tab.active{background:#1a5276;color:#fff}
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
+.card-title{font-weight:700;font-size:15px;color:#1a5276;margin-bottom:14px;border-bottom:1px solid #eaf2fb;padding-bottom:8px}
+label{display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:4px;margin-top:8px}
+input,select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ddd;font-size:14px;margin-bottom:4px;outline:none;background:#fff;box-sizing:border-box}
+.btn{display:block;width:100%;padding:12px;border-radius:10px;border:none;background:#1a5276;color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px}
+.btn:disabled{background:#888;cursor:default}
+.btn-red{background:#e74c3c}
+.btn-gray{background:#95a5a6}
+.btn-sm{display:inline-block;width:auto;padding:5px 12px;font-size:12px;margin:0;border-radius:6px;border:none;color:#fff;cursor:pointer;font-weight:600}
+.row2{display:flex;gap:10px;margin-bottom:4px;margin-top:8px}
+.mbtn{flex:1;padding:10px 0;border-radius:10px;border:2px solid #ddd;background:#fff;color:#888;font-weight:400;cursor:pointer;font-size:14px}
+.mbtn.active{border-color:#1a5276;background:#eaf2fb;color:#1a5276;font-weight:700}
+.reg-item{background:#f8f9fa;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:13px}
+.badge{border-radius:6px;padding:2px 8px;font-size:12px;display:inline-block}
+.bg{background:#d5f5e3;color:#1e8449}
+.br{background:#fadbd8;color:#c0392b}
+.warn-box{background:#fef9e7;border:1px solid #f39c12;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#7d6608}
+.err{color:#c0392b;font-size:13px;margin-top:6px}
+.ok{color:#1e8449;font-size:13px;font-weight:600;margin-top:6px}
+.tela{display:none}
+.tela.active{display:block}
+.aluno-row{display:flex;align-items:center;justify-content:space-between;background:#f8f9fa;border-radius:8px;padding:10px 12px;margin-bottom:6px}
+.flex-row{display:flex;gap:8px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top:2px solid #fff;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px}
+.user-info{display:flex;align-items:center;gap:8px}
+.user-avatar{width:30px;height:30px;border-radius:50%;border:2px solid #aed6f1}
+.user-name{color:#aed6f1;font-size:12px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{background:none;border:1px solid #aed6f1;color:#aed6f1;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px}
+.login-box{text-align:center;padding:32px 16px}
+.login-box h2{color:#1a5276;margin-bottom:8px;font-size:18px}
+.login-box p{color:#777;font-size:13px;margin-bottom:24px}
+.google-btn{display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid #ddd;border-radius:10px;padding:12px 24px;cursor:pointer;font-size:15px;font-weight:600;color:#333;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="header-left">
+      <span style="font-size:28px">&#127947;</span>
+      <div><h1>Avaliacoes Diarias</h1><p>Longevos</p></div>
+    </div>
+    <div id="header-user" style="display:none">
+      <div class="user-info">
+        <img id="user-avatar" class="user-avatar" src="" alt=""/>
+        <span id="user-name" class="user-name"></span>
+        <button class="logout-btn" onclick="logout()">Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="tela-login" class="card login-box">
+    <h2>Bem-vindo ao Avaliacoes Diarias</h2>
+    <p>Faca login com a conta Google do estudio para acessar e sincronizar com o Google Sheets.</p>
+    <button class="google-btn" id="btn-google" onclick="loginGoogle()" disabled>
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Carregando...
+    </button>
+    <div id="login-erro" class="err" style="display:none"></div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" style="display:none">
+    <div class="tabs">
+      <button class="tab active" id="tab-registro" onclick="showTela('registro')">&#128203; Registrar</button>
+      <button class="tab" id="tab-alunos" onclick="showTela('alunos')">&#128101; Alunos</button>
+    </div>
+
+    <!-- TELA REGISTRO -->
+    <div id="tela-registro" class="tela active">
+      <div class="card">
+        <div class="card-title">Nova Avaliacao</div>
+        <div id="warn-alunos" class="warn-box" style="display:none">Nenhum aluno cadastrado. Va em Alunos para adicionar.</div>
+        <label>Aluno</label>
+        <select id="sel-aluno" onchange="verificarBadges()"><option value="">Selecione...</option></select>
+        <div id="badges-row" style="display:flex;gap:8px;margin:6px 0 10px"></div>
+        <label>Momento</label>
+        <div class="row2">
+          <button class="mbtn active" id="btn-pre" onclick="setMomento('pre')">Pre-treino</button>
+          <button class="mbtn" id="btn-pos" onclick="setMomento('pos')">Pos-treino</button>
+        </div>
+        <label>PAS (mmHg)</label><input type="number" id="f-pas" placeholder="Obrigatorio"/>
+        <label>PAD (mmHg)</label><input type="number" id="f-pad" placeholder="Obrigatorio"/>
+        <label>FC (bpm)</label><input type="number" id="f-fc" placeholder="Obrigatorio"/>
+        <label>Saturacao O2 (%)</label><input type="number" id="f-sat" placeholder="Obrigatorio"/>
+        <label>Glicemia (mg/dL) <span style="color:#aaa;font-size:11px">(opcional)</span></label>
+        <input type="number" id="f-gli" placeholder="Opcional"/>
+        <div id="reg-erro" class="err" style="display:none"></div>
+        <div id="reg-ok" class="ok" style="display:none"></div>
+        <button class="btn" id="btn-salvar" onclick="salvar()">Salvar Avaliacao</button>
+      </div>
+      <div id="card-hoje" class="card" style="display:none">
+        <div class="card-title" id="titulo-hoje"></div>
+        <div id="lista-hoje"></div>
+      </div>
+    </div>
+
+    <!-- TELA ALUNOS -->
+    <div id="tela-alunos" class="tela">
+      <div class="card">
+        <div class="card-title">Cadastrar Aluno</div>
+        <label>Nome completo</label>
+        <div class="flex-row">
+          <input type="text" id="input-nome" placeholder="Nome do aluno..." onkeydown="if(event.key==='Enter')adicionarAluno()" style="flex:1;margin-bottom:0"/>
+          <button class="btn btn-sm" style="background:#1a5276;margin-top:0;white-space:nowrap" onclick="adicionarAluno()">+ Adicionar</button>
+        </div>
+        <div id="add-status" style="font-size:12px;margin-top:6px;display:none"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="titulo-alunos">Alunos cadastrados (0)</div>
+        <input type="text" id="busca-aluno" placeholder="Buscar aluno..." oninput="renderAlunos()" style="margin-bottom:12px"/>
+        <div id="lista-alunos"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://accounts.google.com/gsi/client" onload="initGIS()" async defer></script>
+<script>
+var CLIENT_ID = "751848096243-lp8tq4ho61i6g12usbo552rimhb00kfg.apps.googleusercontent.com";
+var SHEET_ID  = "1CjFUWKX3hZbQi9TiYsW5RteX07ZHzAJi35Ja_SBmHoI";
+var SCOPES    = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile";
+var HEADER    = ["DATA","PAS pre (mmHg)","PAD pre (mmHg)","FC pre (bpm)","Saturacao O2 pre (%)","Glicemia pre (mg/Dl)","PAS pos (mmHg)","PAD pos (mmHg)","FC pos (bpm)","Saturacao O2 pos (%)","Glicemia pos (mg/Dl)"];
+var tokenClient = null;
+var accessToken = null;
+var momento = "pre";
+
+function getAlunos()    { try { return JSON.parse(localStorage.getItem("longevos_alunos"))    || []; } catch(e) { return []; } }
+function getRegistros() { try { return JSON.parse(localStorage.getItem("longevos_registros")) || []; } catch(e) { return []; } }
+function saveAlunos(a)    { localStorage.setItem("longevos_alunos",    JSON.stringify(a)); }
+function saveRegistros(r) { localStorage.setItem("longevos_registros", JSON.stringify(r)); }
+
+function hoje() {
+  return new Date().toLocaleDateString("pt-BR");
+}
+
+function initGIS() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: onAuthResp
+  });
+  var btn = document.getElementById("btn-google");
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Entrar com Google';
+}
+
+function onAuthResp(resp) {
+  if (resp.error) {
+    var el = document.getElementById("login-erro");
+    el.textContent = "Erro ao autenticar: " + resp.error;
+    el.style.display = "block";
+    return;
+  }
+  accessToken = resp.access_token;
+  fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+    headers: { "Authorization": "Bearer " + accessToken }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(info) {
+    document.getElementById("user-name").textContent = info.name || info.email || "";
+    if (info.picture) { document.getElementById("user-avatar").src = info.picture; }
+    document.getElementById("header-user").style.display = "block";
+    document.getElementById("tela-login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    renderRegistro();
+  });
+}
+
+function loginGoogle() {
+  document.getElementById("login-erro").style.display = "none";
+  tokenClient.requestAccessToken();
+}
+
+function logout() {
+  if (accessToken) { google.accounts.oauth2.revoke(accessToken); }
+  accessToken = null;
+  document.getElementById("app").style.display = "none";
+  document.getElementById("tela-login").style.display = "block";
+  document.getElementById("header-user").style.display = "none";
+}
+
+function apiReq(method, url, body) {
+  var opts = {
+    method: method,
+    headers: { "Authorization": "Bearer " + accessToken, "Content-Type": "application/json" }
+  };
+  if (body) { opts.body = JSON.stringify(body); }
+  return fetch(url, opts).then(function(r) { return r.json(); });
+}
+
+function getLinhas(nome) {
+  return apiReq("GET", "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + "/values/" + encodeURIComponent(nome + "!A:K"), null)
+    .then(function(d) { return d.values || []; });
+}
+
+function salvar() {
+  var alunoId = document.getElementById("sel-aluno").value;
+  var pas = document.getElementById("f-pas").value;
+  var pad = document.getElementById("f-pad").value;
+  var fc  = document.getElementById("f-fc").value;
+  var sat = document.getElementById("f-sat").value;
+  var gli = document.getElementById("f-gli").value;
+  var erro = document.getElementById("reg-erro");
+  var ok   = document.getElementById("reg-ok");
+  erro.style.display = "none";
+  ok.style.display = "none";
+
+  if (!alunoId) { erro.textContent = "Selecione um aluno."; erro.style.display = "block"; return; }
+  if (!pas || !pad || !fc || !sat) { erro.textContent = "Preencha todos os campos obrigatorios."; erro.style.display = "block"; return; }
+
+  var alunos = getAlunos();
+  var aluno = null;
+  for (var i = 0; i < alunos.length; i++) {
+    if (alunos[i].id === alunoId) { aluno = alunos[i]; break; }
+  }
+
+  var btn = document.getElementById("btn-salvar");
+  btn.disabled = true;
+  btn.innerHTML = "<span class='spinner'></span>Salvando...";
+
+  var dataHoje = hoje();
+
+  getLinhas(aluno.nome)
+  .then(function(linhas) {
+    var rowIndex = -1;
+    for (var i = 1; i < linhas.length; i++) {
+      if (linhas[i][0] === dataHoje) { rowIndex = i + 1; break; }
+    }
+    var linha;
+    if (rowIndex > 0) {
+      var ex = linhas[rowIndex - 1];
+      while (ex.length < 11) { ex.push(""); }
+      if (momento === "pre") {
+        linha = [dataHoje, pas, pad, fc, sat, gli, ex[6]||"", ex[7]||"", ex[8]||"", ex[9]||"", ex[10]||""];
+      } else {
+        linha = [dataHoje, ex[1]||"", ex[2]||"", ex[3]||"", ex[4]||"", ex[5]||"", pas, pad, fc, sat, gli];
+      }
+      var range = aluno.nome + "!A" + rowIndex + ":K" + rowIndex;
+      return apiReq("PUT", "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + "/values/" + encodeURIComponent(range) + "?valueInputOption=RAW", { values: [linha] });
+    } else {
+      if (momento === "pre") {
+        linha = [dataHoje, pas, pad, fc, sat, gli, "", "", "", "", ""];
+      } else {
+        linha = [dataHoje, "", "", "", "", "", pas, pad, fc, sat, gli];
+      }
+      return apiReq("POST", "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + "/values/" + encodeURIComponent(aluno.nome + "!A:K") + ":append?valueInputOption=RAW&insertDataOption=INSERT_ROWS", { values: [linha] });
+    }
+  })
+  .then(function() {
+    var reg = { id: Date.now(), alunoId: alunoId, alunoNome: aluno.nome, data: dataHoje, momento: momento, pas: pas, pad: pad, fc: fc, sat: sat, glicose: gli };
+    var regs = getRegistros();
+    regs.push(reg);
+    saveRegistros(regs);
+    document.getElementById("f-pas").value = "";
+    document.getElementById("f-pad").value = "";
+    document.getElementById("f-fc").value  = "";
+    document.getElementById("f-sat").value = "";
+    document.getElementById("f-gli").value = "";
+    ok.textContent = "Salvo no Google Sheets!";
+    ok.style.display = "block";
+    setTimeout(function() { ok.style.display = "none"; }, 3000);
+    btn.disabled = false;
+    btn.textContent = "Salvar Avaliacao";
+    verificarBadges();
+    renderHoje();
+  })
+  .catch(function(e) {
+    erro.textContent = "Erro ao salvar: " + (e.message || "tente novamente.");
+    erro.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Salvar Avaliacao";
+  });
+}
+
+function adicionarAluno() {
+  var input = document.getElementById("input-nome");
+  var n = input.value.trim();
+  if (!n) { return; }
+  var alunos = getAlunos();
+  for (var i = 0; i < alunos.length; i++) {
+    if (alunos[i].nome.toLowerCase() === n.toLowerCase()) { alert("Ja existe um aluno com este nome."); return; }
+  }
+  var status = document.getElementById("add-status");
+  status.textContent = "Criando aba no Google Sheets...";
+  status.style.color = "#1a5276";
+  status.style.display = "block";
+
+  apiReq("GET", "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + "?fields=sheets.properties.title", null)
+  .then(function(data) {
+    var nomes = [];
+    if (data.sheets) {
+      for (var i = 0; i < data.sheets.length; i++) { nomes.push(data.sheets[i].properties.title); }
+    }
+    if (nomes.indexOf(n) >= 0) { return Promise.resolve(); }
+    return apiReq("POST", "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + ":batchUpdate", { requests: [{ addSheet: { properties: { title: n } } }] })
+    .then(function(resp) {
+      if (resp.error) { throw new Error(resp.error.message); }
+      return apiReq("PUT", "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + "/values/" + encodeURIComponent(n + "!A1") + "?valueInputOption=RAW", { values: [HEADER] });
+    });
+  })
+  .then(function() {
+    alunos.push({ id: Date.now().toString(), nome: n });
+    saveAlunos(alunos);
+    input.value = "";
+    status.textContent = "Aluno cadastrado e aba criada!";
+    status.style.color = "#1e8449";
+    setTimeout(function() { status.style.display = "none"; }, 3000);
+    renderAlunos();
+    renderRegistro();
+  })
+  .catch(function(e) {
+    status.textContent = "Erro: " + (e.message || "tente novamente.");
+    status.style.color = "#c0392b";
+  });
+}
+
+function removerAluno(id) {
+  var alunos = getAlunos();
+  var novos = [];
+  for (var i = 0; i < alunos.length; i++) {
+    if (alunos[i].id !== id) { novos.push(alunos[i]); }
+  }
+  saveAlunos(novos);
+  renderAlunos();
+  renderRegistro();
+}
+
+function showTela(t) {
+  var ids = ["registro", "alunos"];
+  for (var i = 0; i < ids.length; i++) {
+    document.getElementById("tela-" + ids[i]).classList.remove("active");
+    document.getElementById("tab-"  + ids[i]).classList.remove("active");
+  }
+  document.getElementById("tela-" + t).classList.add("active");
+  document.getElementById("tab-"  + t).classList.add("active");
+  if (t === "registro") { renderRegistro(); }
+  if (t === "alunos")   { renderAlunos(); }
+}
+
+function setMomento(m) {
+  momento = m;
+  if (m === "pre") {
+    document.getElementById("btn-pre").classList.add("active");
+    document.getElementById("btn-pos").classList.remove("active");
+  } else {
+    document.getElementById("btn-pos").classList.add("active");
+    document.getElementById("btn-pre").classList.remove("active");
+  }
+}
+
+function verificarBadges() {
+  var alunoId = document.getElementById("sel-aluno").value;
+  var row = document.getElementById("badges-row");
+  row.innerHTML = "";
+  if (!alunoId) { return; }
+  var regs = getRegistros();
+  var h = hoje();
+  var temPre = false;
+  var temPos = false;
+  for (var i = 0; i < regs.length; i++) {
+    if (regs[i].alunoId === alunoId && regs[i].data === h) {
+      if (regs[i].momento === "pre") { temPre = true; }
+      if (regs[i].momento === "pos") { temPos = true; }
+    }
+  }
+  if (temPre) { row.innerHTML += "<span class='badge bg'>Pre registrado</span> "; }
+  if (temPos) { row.innerHTML += "<span class='badge bg'>Pos registrado</span>"; }
+}
+
+function renderRegistro() {
+  var alunos = getAlunos();
+  alunos.sort(function(a, b) { return a.nome.localeCompare(b.nome); });
+  var sel = document.getElementById("sel-aluno");
+  var cur = sel.value;
+  sel.innerHTML = "<option value=''>Selecione...</option>";
+  for (var i = 0; i < alunos.length; i++) {
+    var o = document.createElement("option");
+    o.value = alunos[i].id;
+    o.textContent = alunos[i].nome;
+    if (alunos[i].id === cur) { o.selected = true; }
+    sel.appendChild(o);
+  }
+  document.getElementById("warn-alunos").style.display = alunos.length === 0 ? "block" : "none";
+  verificarBadges();
+  renderHoje();
+}
+
+function renderHoje() {
+  var regs = getRegistros();
+  var hj = hoje();
+  var filtered = [];
+  for (var i = 0; i < regs.length; i++) { if (regs[i].data === hj) { filtered.push(regs[i]); } }
+  var card = document.getElementById("card-hoje");
+  if (filtered.length === 0) { card.style.display = "none"; return; }
+  card.style.display = "block";
+  document.getElementById("titulo-hoje").textContent = "Registros de hoje (" + filtered.length + ")";
+  var html = "";
+  for (var i = filtered.length - 1; i >= 0; i--) {
+    var r = filtered[i];
+    var gli = r.glicose ? " | Gli " + r.glicose : "";
+    var cor = r.momento === "pre" ? "bg" : "br";
+    var lab = r.momento === "pre" ? "Pre" : "Pos";
+    html += "<div class='reg-item'><b>" + r.alunoNome + "</b> <span class='badge " + cor + "'>" + lab + "-treino</span>";
+    html += "<div style='color:#555;margin-top:2px'>PAS " + r.pas + " | PAD " + r.pad + " | FC " + r.fc + " | Sat " + r.sat + "%" + gli + "</div></div>";
+  }
+  document.getElementById("lista-hoje").innerHTML = html;
+}
+
+function renderAlunos() {
+  var alunos = getAlunos();
+  var busca = document.getElementById("busca-aluno").value.toLowerCase();
+  document.getElementById("titulo-alunos").textContent = "Alunos cadastrados (" + alunos.length + ")";
+  var filtrados = [];
+  for (var i = 0; i < alunos.length; i++) {
+    if (alunos[i].nome.toLowerCase().indexOf(busca) >= 0) { filtrados.push(alunos[i]); }
+  }
+  filtrados.sort(function(a, b) { return a.nome.localeCompare(b.nome); });
+  var lista = document.getElementById("lista-alunos");
+  if (filtrados.length === 0) {
+    lista.innerHTML = "<div style='color:#aaa;text-align:center;padding:16px 0'>Nenhum aluno encontrado.</div>";
+    return;
+  }
+  var html = "";
+  for (var i = 0; i < filtrados.length; i++) {
+    var a = filtrados[i];
+    html += "<div class='aluno-row' id='arow-" + a.id + "'>";
+    html += "<span style='font-weight:500'>" + a.nome + "</span>";
+    html += "<div>";
+    html += "<div id='conf-" + a.id + "' style='display:none;gap:6px'>";
+    html += "<button class='btn btn-sm btn-red' onclick=\"removerAluno('" + a.id + "')\">Confirmar</button> ";
+    html += "<button class='btn btn-sm btn-gray' onclick=\"cancelarRemover('" + a.id + "')\">Cancelar</button>";
+    html += "</div>";
+    html += "<button class='btn btn-sm' id='rem-" + a.id + "' style='background:none;border:1px solid #e74c3c;color:#e74c3c' onclick=\"pedirRemover('" + a.id + "')\">Remover</button>";
+    html += "</div></div>";
+  }
+  lista.innerHTML = html;
+}
+
+function pedirRemover(id) {
+  document.getElementById("conf-" + id).style.display = "flex";
+  document.getElementById("rem-"  + id).style.display = "none";
+}
+
+function cancelarRemover(id) {
+  document.getElementById("conf-" + id).style.display = "none";
+  document.getElementById("rem-"  + id).style.display = "inline-block";
+}
+</script>
+</body>
+</html>
