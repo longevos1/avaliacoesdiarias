@@ -155,8 +155,52 @@ var momento = "pre";
 
 function getAlunos()    { try { return JSON.parse(localStorage.getItem("longevos_alunos"))    || []; } catch(e) { return []; } }
 function getRegistros() { try { return JSON.parse(localStorage.getItem("longevos_registros")) || []; } catch(e) { return []; } }
-function saveAlunos(a)    { localStorage.setItem("longevos_alunos",    JSON.stringify(a)); }
-function saveRegistros(r) { localStorage.setItem("longevos_registros", JSON.stringify(r)); }
+function saveAlunosLocal(a) { localStorage.setItem("longevos_alunos", JSON.stringify(a)); }
+function saveRegistros(r)   { localStorage.setItem("longevos_registros", JSON.stringify(r)); }
+
+// Carrega alunos da aba alunos no Sheets e sincroniza localStorage
+function carregarAlunosDoSheets() {
+  return apiReq("GET", "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + "/values/" + encodeURIComponent("alunos!A:B"), null)
+  .then(function(d) {
+    var rows = d.values || [];
+    var alunos = [];
+    for (var i = 1; i < rows.length; i++) { // pula cabeçalho
+      if (rows[i][0] && rows[i][1]) {
+        alunos.push({ id: rows[i][0], nome: rows[i][1] });
+      }
+    }
+    saveAlunosLocal(alunos);
+    return alunos;
+  })
+  .catch(function() { return getAlunos(); }); // fallback para localStorage
+}
+
+// Salva lista completa de alunos na aba _alunos
+function salvarAlunosNoSheets(alunos) {
+  var valores = [["id","nome"]];
+  for (var i = 0; i < alunos.length; i++) {
+    valores.push([alunos[i].id, alunos[i].nome]);
+  }
+  return apiReq("PUT",
+    "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + "/values/" + encodeURIComponent("alunos!A:B") + "?valueInputOption=RAW",
+    { values: valores }
+  ).then(function() {
+    // Limpa linhas extras se houver menos alunos que antes
+    return apiReq("POST", "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + ":batchUpdate", {
+      requests: [{
+        deleteDimension: {
+          range: {
+            sheetId: null, // será ignorado se não achar
+            dimension: "ROWS",
+            startIndex: valores.length,
+            endIndex: 1000
+          }
+        }
+      }]
+    }).catch(function() {}); // ignora erro de limpeza
+  });
+}
+
 
 function hoje() {
   return new Date().toLocaleDateString("pt-BR");
@@ -191,7 +235,10 @@ function onAuthResp(resp) {
     document.getElementById("header-user").style.display = "block";
     document.getElementById("tela-login").style.display = "none";
     document.getElementById("app").style.display = "block";
-    renderRegistro();
+    // Garante que a aba alunos existe, depois carrega alunos
+    garantirAba_alunos().then(function() {
+      carregarAlunosDoSheets().then(function() { renderRegistro(); });
+    });
   });
 }
 
@@ -300,6 +347,24 @@ function salvar() {
     btn.textContent = "Salvar Avaliação";
   });
 }
+function garantirAba_alunos() {
+  return apiReq("GET", "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + "?fields=sheets.properties.title", null)
+  .then(function(data) {
+    var nomes = [];
+    if (data.sheets) {
+      for (var i = 0; i < data.sheets.length; i++) { nomes.push(data.sheets[i].properties.title); }
+    }
+    if (nomes.indexOf("alunos") >= 0) { return Promise.resolve(); }
+    return apiReq("POST", "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + ":batchUpdate", {
+      requests: [{ addSheet: { properties: { title: "alunos" } } }]
+    }).then(function() {
+      return apiReq("PUT",
+        "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + "/values/" + encodeURIComponent("alunos!A1:B1") + "?valueInputOption=RAW",
+        { values: [["id","nome"]] }
+      );
+    });
+  });
+}
 
 function adicionarAluno() {
   var input = document.getElementById("input-nome");
@@ -328,8 +393,12 @@ function adicionarAluno() {
     });
   })
   .then(function() {
-    alunos.push({ id: Date.now().toString(), nome: n });
-    saveAlunos(alunos);
+    var novoAluno = { id: Date.now().toString(), nome: n };
+    alunos.push(novoAluno);
+    saveAlunosLocal(alunos);
+    return salvarAlunosNoSheets(alunos);
+  })
+  .then(function() {
     input.value = "";
     status.textContent = "Aluno cadastrado e aba criada!";
     status.style.color = "#1e8449";
@@ -349,9 +418,11 @@ function removerAluno(id) {
   for (var i = 0; i < alunos.length; i++) {
     if (alunos[i].id !== id) { novos.push(alunos[i]); }
   }
-  saveAlunos(novos);
-  renderAlunos();
-  renderRegistro();
+  saveAlunosLocal(novos);
+  salvarAlunosNoSheets(novos).then(function() {
+    renderAlunos();
+    renderRegistro();
+  });
 }
 
 function showTela(t) {
