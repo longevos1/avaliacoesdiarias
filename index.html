@@ -103,10 +103,10 @@ input,select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #dd
           <button class="mbtn active" id="btn-pre" onclick="setMomento('pre')">Pré-treino</button>
           <button class="mbtn" id="btn-pos" onclick="setMomento('pos')">Pós-treino</button>
         </div>
-        <label>PAS (mmHg)</label><input type="number" id="f-pas" placeholder="Obrigatorio"/>
-        <label>PAD (mmHg)</label><input type="number" id="f-pad" placeholder="Obrigatorio"/>
-        <label>FC (bpm)</label><input type="number" id="f-fc" placeholder="Obrigatorio"/>
-        <label>Saturação O2 (%)</label><input type="number" id="f-sat" placeholder="Obrigatorio"/>
+        <label>PAS (mmHg)</label><input type="number" id="f-pas" placeholder="Obrigatório"/>
+        <label>PAD (mmHg)</label><input type="number" id="f-pad" placeholder="Obrigatório"/>
+        <label>FC (bpm)</label><input type="number" id="f-fc" placeholder="Obrigatório"/>
+        <label>Saturação O2 (%)</label><input type="number" id="f-sat" placeholder="Obrigatório"/>
         <label>Glicemia (mg/dL) <span style="color:#aaa;font-size:11px">(opcional)</span></label>
         <input type="number" id="f-gli" placeholder="Opcional"/>
         <div id="reg-erro" class="err" style="display:none"></div>
@@ -232,7 +232,7 @@ function salvar() {
   ok.style.display = "none";
 
   if (!alunoId) { erro.textContent = "Selecione um aluno."; erro.style.display = "block"; return; }
-  if (!pas || !pad || !fc || !sat) { erro.textContent = "Preencha todos os campos obrigatorios."; erro.style.display = "block"; return; }
+  if (!pas || !pad || !fc || !sat) { erro.textContent = "Preencha todos os campos obrigatórios."; erro.style.display = "block"; return; }
 
   var alunos = getAlunos();
   var aluno = null;
