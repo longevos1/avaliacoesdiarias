@@ -428,7 +428,7 @@ function renderHoje() {
     var r = filtered[i];
     var gli = r.glicose ? " | Gli " + r.glicose : "";
     var cor = r.momento === "pre" ? "bg" : "br";
-    var lab = r.momento === "pre" ? "Pre" : "Pos";
+    var lab = r.momento === "pre" ? "Pré" : "Pós";
     html += "<div class='reg-item'><b>" + r.alunoNome + "</b> <span class='badge " + cor + "'>" + lab + "-treino</span>";
     html += "<div style='color:#555;margin-top:2px'>PAS " + r.pas + " | PAD " + r.pad + " | FC " + r.fc + " | Sat " + r.sat + "%" + gli + "</div></div>";
   }
