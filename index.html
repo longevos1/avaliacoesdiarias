@@ -201,7 +201,6 @@ function salvarAlunosNoSheets(alunos) {
   });
 }
 
-
 function hoje() {
   return new Date().toLocaleDateString("pt-BR");
 }
@@ -299,12 +298,26 @@ function salvar() {
   getLinhas(aluno.nome)
   .then(function(linhas) {
     var rowIndex = -1;
+    var linhaDia = null;
     for (var i = 1; i < linhas.length; i++) {
-      if (linhas[i][0] === dataHoje) { rowIndex = i + 1; break; }
+      if (linhas[i][0] === dataHoje) { rowIndex = i + 1; linhaDia = linhas[i]; break; }
     }
+
+    // Verifica se o momento já foi gravado NA PLANILHA
+    if (linhaDia) {
+      var jaTemPre = linhaDia[1] && linhaDia[1].toString().trim() !== "";
+      var jaTemPos = linhaDia[6] && linhaDia[6].toString().trim() !== "";
+      if (momento === "pre" && jaTemPre) {
+        throw new Error("Registro de Pré-treino para " + aluno.nome + " hoje já existe na planilha. Operação cancelada.");
+      }
+      if (momento === "pos" && jaTemPos) {
+        throw new Error("Registro de Pós-treino para " + aluno.nome + " hoje já existe na planilha. Operação cancelada.");
+      }
+    }
+
     var linha;
     if (rowIndex > 0) {
-      var ex = linhas[rowIndex - 1];
+      var ex = linhaDia;
       while (ex.length < 11) { ex.push(""); }
       if (momento === "pre") {
         linha = [dataHoje, pas, pad, fc, sat, gli, ex[6]||"", ex[7]||"", ex[8]||"", ex[9]||"", ex[10]||""];
