@@ -466,18 +466,37 @@ function verificarBadges() {
   var row = document.getElementById("badges-row");
   row.innerHTML = "";
   if (!alunoId) { return; }
-  var regs = getRegistros();
-  var h = hoje();
-  var temPre = false;
-  var temPos = false;
-  for (var i = 0; i < regs.length; i++) {
-    if (regs[i].alunoId === alunoId && regs[i].data === h) {
-      if (regs[i].momento === "pre") { temPre = true; }
-      if (regs[i].momento === "pos") { temPos = true; }
-    }
+  var alunos = getAlunos();
+  var aluno = null;
+  for (var i = 0; i < alunos.length; i++) {
+    if (alunos[i].id === alunoId) { aluno = alunos[i]; break; }
   }
+  if (!aluno) { return; }
+  var dataHoje = hoje();
+  getLinhas(aluno.nome).then(function(linhas) {
+    for (var i = 1; i < linhas.length; i++) {
+      if (linhas[i][0] === dataHoje) {
+        var temPre = linhas[i][1] && linhas[i][1].toString().trim() !== "";
+        var temPos = linhas[i][6] && linhas[i][6].toString().trim() !== "";
+        if (temPre) { row.innerHTML += "<span class='badge bg'>Pré registrado</span> "; }
+        if (temPos) { row.innerHTML += "<span class='badge bg'>Pós registrado</span>"; }
+        return;
+      }
+    }
+  }).catch(function() {
+    var regs = getRegistros();
+    var h = hoje();
+    var temPre = false; 
+	var temPos = false;
+    for (var i = 0; i < regs.length; i++) {
+      if (regs[i].alunoId === alunoId && regs[i].data === h) {
+        if (regs[i].momento === "pre") { temPre = true; }
+        if (regs[i].momento === "pos") { temPos = true; }
+      }
+    }
   if (temPre) { row.innerHTML += "<span class='badge bg'>Pré registrado</span> "; }
-  if (temPos) { row.innerHTML += "<span class='badge bg'>Pós registrado</span>"; }
+  if (temPos) { row.innerHTML += "<span class='badge bg'>Pós registrado</span>"; }  });
+  });
 }
 
 function renderRegistro() {
